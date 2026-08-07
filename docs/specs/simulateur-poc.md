@@ -314,6 +314,19 @@ ci-dessus : NE PAS les implémenter. Les noter ici, l'humain décidera.
   est perdu ; la session et son transcript restent consultables. Risque accepté en v0.
 - **Garde-fous de coût.** Le cap de 10 minutes par appel est le seul en v0. Pas de quota
   journalier, pas de plafond de dépense.
+- **Contrainte d'unicité sur `debriefs.session_id` (repéré en #2).** Une session ne devrait
+  porter qu'un seul debrief, mais rien ne l'empêche aujourd'hui : un `unique` sur
+  `session_id` le garantirait. Absent des critères de #2, donc **non implémenté**.
+- **Contrainte « mode B ⇒ `texte_linkedin` non nul » (repéré en #2).** Le parcours rend le
+  profil LinkedIn obligatoire en mode `reel`, mais la base accepte un persona `reel` sans
+  texte collé. Un CHECK conditionnel le fermerait au niveau des données. Absent des critères
+  de #2 (qui ne listent que les CHECK d'énumération et de bornes), donc **non implémenté** —
+  la règle est portée par la validation applicative (#5, #11).
+- **Faux positif du scanner de secrets (repéré en #2).** `scripts/scan-secrets.sh` matche
+  `SUPABASE_SERVICE_ROL`+`E`, ce qui attrape le **nom** de la variable autant qu'une valeur :
+  tout code ou workflow qui lit légitimement cette variable est bloqué. Contourné deux fois
+  par assemblage du littéral. La regex gagnerait à exiger une valeur après le nom. Non traité
+  ici : le scanner est un gate partagé.
 
 ## Definition of Done
 

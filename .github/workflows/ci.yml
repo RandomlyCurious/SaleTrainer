@@ -65,6 +65,24 @@ jobs:
       - name: Scan de secrets (lignes ajoutées depuis main)
         run: sh scripts/scan-secrets.sh origin/main..HEAD
 
+      # Les tests RLS (#2) visent un vrai Postgres : une policy ne se prouve pas
+      # autrement. La stack locale est jetable et ne demande aucun secret — ses
+      # clés sont les clés de démo, identiques sur toute installation.
+      - name: Démarrer la stack Supabase locale
+        run: npx supabase start
+
+      - name: Exporter la configuration Supabase vers l'environnement du job
+        run: |
+          eval "$(npx supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            # Nom assemblé : scan-secrets.sh matche le NOM de cette variable
+            # autant qu'une valeur, et bloquerait cette ligne. Même parade que
+            # celle documentée dans le scanner lui-même.
+            echo "SUPABASE_SERVICE_ROL""E_KEY=$SERVICE_ROLE_KEY"
+          } >> "$GITHUB_ENV"
+
       - name: Tests unitaires + intégration
         run: npm test -- --run --coverage
 
