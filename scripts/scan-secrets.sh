@@ -26,7 +26,14 @@
 # Passent donc : `…KEY` cité seul, `…KEY=` vide, `…KEY=$AUTRE`, `…KEY: ${{ … }}`.
 # Restent bloqués : `…KEY=` suivi d'un littéral d'au moins 20 caractères — ce qui
 # couvre le JWT historique comme la clé `sb_secret_…` du nouveau format.
-PATTERN='(SUPABASE_SERVICE_ROL[E][A-Z_]*\s*[:=]\s*["'"'"']?[A-Za-z0-9_.-]{20,}|sk_live[_]|sk_test[_]|ey[J][A-Za-z0-9_-]{20,}|gh[pous]_|api[_-]?key\s*=\s*["'"'"'][A-Za-z0-9]{20,})'
+#
+# `sb_secret[_]` suivi d'au moins 16 caractères attrape en plus la clé Supabase
+# du nouveau format collée NUE, sans nom de variable en face — le cas que la
+# règle ci-dessus laisse passer. La longueur est exigée pour la même raison que
+# ci-dessus : le préfixe seul, cité dans un commentaire ou de la doc, n'est pas
+# un secret. Volontairement pas de `sb_[a-z]*_` non plus : `sb_publishable_…`
+# est publique par construction, la bloquer serait un faux positif de plus.
+PATTERN='(SUPABASE_SERVICE_ROL[E][A-Z_]*\s*[:=]\s*["'"'"']?[A-Za-z0-9_.-]{20,}|sb_secret[_][A-Za-z0-9_-]{16,}|sk_live[_]|sk_test[_]|ey[J][A-Za-z0-9_-]{20,}|gh[pous]_|api[_-]?key\s*=\s*["'"'"'][A-Za-z0-9]{20,})'
 
 # La ligne fautive n'est volontairement PAS affichée : elle finirait en clair
 # dans les logs GitHub Actions, qui sont conservés et lisibles.

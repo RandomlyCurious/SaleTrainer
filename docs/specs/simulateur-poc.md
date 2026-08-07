@@ -319,11 +319,6 @@ ci-dessus : NE PAS les implémenter. Les noter ici, l'humain décidera.
   texte collé. Un CHECK conditionnel le fermerait au niveau des données. Absent des critères
   de #2 (qui ne listent que les CHECK d'énumération et de bornes), donc **non implémenté** —
   la règle est portée par la validation applicative (#5, #11).
-- **Clé `sb_secret_…` collée nue (repéré en #21).** Aucune alternative de
-  `scripts/scan-secrets.sh` n'attrape une clé Supabase du nouveau format collée **sans nom de
-  variable en face** — elle n'est bloquée que dans une affectation. C'était déjà vrai avant
-  #21, qui n'a pas élargi la détection. Un motif `sb_secret[_]` la couvrirait. Hors critères
-  de #21, donc **non implémenté**.
 
 ## Definition of Done
 

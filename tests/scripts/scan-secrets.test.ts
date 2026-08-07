@@ -88,6 +88,17 @@ describe("laisse passer ce qui n'est pas un secret", () => {
   it("accepte une cle publishable, qui est publique par construction", () => {
     expect(codeDeSortie(`const cle = "${CLE_PUBLISHABLE}";`)).toBe(0);
   });
+
+  // Trouve en ecrivant #21 : la premiere version de l'alternative sb_secret
+  // matchait le prefixe nu, et bloquait la ligne de docs/decisions.md qui le
+  // cite. Un prefixe cite en prose n'est pas un secret.
+  it("accepte le prefixe sb_secret cite en prose, sans cle derriere", () => {
+    const prefixe = "sb_secret" + "_";
+
+    expect(codeDeSortie(`Le nouveau format commence par \`${prefixe}…\`.`)).toBe(
+      0,
+    );
+  });
 });
 
 describe("bloque les secrets reels", () => {
