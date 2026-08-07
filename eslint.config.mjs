@@ -23,6 +23,9 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    // Artefacts générés par la stack Supabase locale (`supabase start`).
+    // Déjà ignorés par git ; eslint ne lit pas .gitignore.
+    "supabase/.temp/**",
   ]),
 ]);
 
