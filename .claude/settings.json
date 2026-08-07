@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(supabase db diff:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git commit --no-verify:*)",
+      "Read(.env*)",
+      "Bash(cat .env*)",
+      "Bash(head .env*)",
+      "Bash(more .env*)",
+      "Bash(type .env*)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATHS\" | grep -q 'supabase/migrations/' && git ls-files --error-unmatch $CLAUDE_FILE_PATHS >/dev/null 2>&1; then echo 'BLOQUÉ : migration déjà appliquée. Crée une NOUVELLE migration.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+#!/bin/sh
+# Bloque tout commit direct sur main
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" = "main" ]; then
+  echo "❌ commit interdit sur main."
+  echo "   Crée une branche : git switch -c feat/<slug>  (ou fix/ chore/ refactor/ docs/)"
+  exit 1
+fi
+# Impose le nommage des branches
+if ! echo "$branch" | grep -qE '^(feat|fix|chore|refactor|docs)/[a-z0-9-]+$'; then
+  echo "❌ nom de branche non conforme : $branch"
+  echo "   Format attendu : <type>/<slug-kebab-case>"
+  echo "   Types autorisés : feat, fix, chore, refactor, docs"
+  echo "   Exemple : git switch -c feat/magic-link-auth"
+  exit 1
+fi
+echo "→ pre-commit : lint + typecheck"
+npm run lint || { echo "❌ lint KO"; exit 1; }
+npm run typecheck || { echo "❌ typecheck KO"; exit 1; }
+# Étape RED du cycle TDD : un commit qui ne touche QUE tests/ et/ou e2e/ est
+# censé porter des tests qui ÉCHOUENT (CLAUDE.md, workflow étape 4). Lancer le
+# gate tests ici rendrait ce commit impossible et donc le cycle RED→GREEN
+# inapplicable. Dès qu'un fichier hors tests/ et e2e/ est présent, le commit
+# prétend implémenter : la suite doit être verte.
+if git diff --cached --name-only | grep -qvE '^(tests|e2e)/'; then
+  echo "→ pre-commit : tests"
+  npm test -- --run || { echo "❌ tests KO"; exit 1; }
+else
+  echo "→ commit de tests seuls (étape RED) : gate tests non lancé."
+fi
+# Bloque les secrets évidents. La regex vit dans scripts/scan-secrets.sh, appelé
+# aussi par la CI : une seule source, pas de dérive entre local et distant.
+sh scripts/scan-secrets.sh --cached || exit 1

@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 — les gates anti-triche et le scan de secrets comparent
+      # la branche à origin/main ; un clone superficiel n'a pas cette référence.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # .only n'est pas listé : Playwright le refuse déjà en CI (forbidOnly).
+      - name: Anti-triche — aucun test désactivé
+        run: |
+          if grep -rnE '(\.(skip|todo|fails|fixme|skipIf)\(|\b(xit|xdescribe)\()' --include='*.ts' --include='*.tsx' tests/ e2e/ src/; then
+            echo "❌ test désactivé détecté (.skip/.todo/.fails/.fixme/.skipIf/xit/xdescribe)"
+            echo "   dans tests/, e2e/ ou src/."
+            echo "   Un test qui gêne se corrige ou se supprime avec la spec, il ne se désactive pas."
+            exit 1
+          fi
+
+      # Interdit n°1 du projet (CLAUDE.md) : on ne réécrit pas un test pour le
+      # faire passer. Un test existant ne bouge que si la spec a changé — et ce
+      # changement s'assume dans un commit `test:` dédié.
+      - name: Anti-triche — tests existants non modifiables
+        run: |
+          touched=$(git diff --diff-filter=MD --name-only origin/main..HEAD -- tests/ e2e/)
+          if [ -n "$touched" ]; then
+            if git log --format=%s origin/main..HEAD | grep -qE '^test(\(.+\))?: '; then
+              echo "→ tests modifiés, assumés par un commit test: — OK"
+            else
+              echo "❌ des tests existants sont modifiés ou supprimés :"
+              echo "$touched" | sed 's/^/     /'
+              echo "   Aucun commit de type 'test:' dans cette PR ne l'assume."
+              echo "   Modifier un test pour le faire passer est interdit (CLAUDE.md)."
+              echo "   Si la spec a réellement changé : isole le changement dans un"
+              echo "   commit 'test: <ticket>' et référence la spec mise à jour."
+              exit 1
+            fi
+          fi
+
+      # Même script que .githooks/pre-commit, rejoué ici parce que le hook local
+      # est contournable (--no-verify) et absent d'un clone qui n'a pas fait
+      # `npm ci`.
+      - name: Scan de secrets (lignes ajoutées depuis main)
+        run: sh scripts/scan-secrets.sh origin/main..HEAD
+
+      - name: Tests unitaires + intégration
+        run: npm test -- --run --coverage
+
+      # Bloquant sur "critical" et non "high" : Next embarque des deps
+      # (postcss, sharp) avec des avis "high" non corrigeables sans downgrade
+      # majeur. Voir docs/decisions.md. À revoir à chaque bump de Next.
+      - name: Audit dépendances (bloquant sur critical)
+        run: npm audit --audit-level=critical
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts build + démarre l'app lui-même quand CI=true.
+      - name: Tests e2e
+        run: npm run test:e2e
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Rapport Playwright (si échec)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
