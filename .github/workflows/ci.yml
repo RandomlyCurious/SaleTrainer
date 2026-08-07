@@ -77,10 +77,7 @@ jobs:
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
-            # Nom assemblé : scan-secrets.sh matche le NOM de cette variable
-            # autant qu'une valeur, et bloquerait cette ligne. Même parade que
-            # celle documentée dans le scanner lui-même.
-            echo "SUPABASE_SERVICE_ROL""E_KEY=$SERVICE_ROLE_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
           } >> "$GITHUB_ENV"
 
       - name: Tests unitaires + intégration

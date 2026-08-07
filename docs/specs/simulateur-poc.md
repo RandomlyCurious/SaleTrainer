@@ -319,11 +319,6 @@ ci-dessus : NE PAS les implémenter. Les noter ici, l'humain décidera.
   texte collé. Un CHECK conditionnel le fermerait au niveau des données. Absent des critères
   de #2 (qui ne listent que les CHECK d'énumération et de bornes), donc **non implémenté** —
   la règle est portée par la validation applicative (#5, #11).
-- **Faux positif du scanner de secrets (repéré en #2).** `scripts/scan-secrets.sh` matche
-  `SUPABASE_SERVICE_ROL`+`E`, ce qui attrape le **nom** de la variable autant qu'une valeur :
-  tout code ou workflow qui lit légitimement cette variable est bloqué. Contourné deux fois
-  par assemblage du littéral. La regex gagnerait à exiger une valeur après le nom. Non traité
-  ici : le scanner est un gate partagé.
 
 ## Definition of Done
 
