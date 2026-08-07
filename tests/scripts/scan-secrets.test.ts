@@ -28,6 +28,8 @@ const CLE_STRIPE_LIVE = "sk_live" + "_" + "51ABCdefGHIjklMNOpqrs";
 const JETON_GITHUB = "gh" + "p_" + "ABCdefGHIjklMNOpqrstuvwxyz0123456789";
 const CLE_SUPABASE_NOUVEAU_FORMAT = "sb_secret" + "_" + "N7UND0UgjKTVKUodkm0";
 const NOM_API_KEY = "API" + "_KEY";
+/** Clé publique de la stack Supabase : ce n'est PAS un secret. */
+const CLE_PUBLISHABLE = "sb_publishable" + "_" + "ACJWlzQHlZjBrEguHvfOxg";
 
 function git(depot: string, args: string[]): void {
   execFileSync("git", args, { cwd: depot, stdio: "pipe" });
@@ -82,6 +84,10 @@ describe("laisse passer ce qui n'est pas un secret", () => {
       codeDeSortie(`La ${NOM_CLE_ADMIN} ne doit jamais atteindre le navigateur.`),
     ).toBe(0);
   });
+
+  it("accepte une cle publishable, qui est publique par construction", () => {
+    expect(codeDeSortie(`const cle = "${CLE_PUBLISHABLE}";`)).toBe(0);
+  });
 });
 
 describe("bloque les secrets reels", () => {
@@ -93,6 +99,10 @@ describe("bloque les secrets reels", () => {
     expect(
       codeDeSortie(`${NOM_CLE_ADMIN}=${CLE_SUPABASE_NOUVEAU_FORMAT}`),
     ).toBe(1);
+  });
+
+  it("bloque une cle sb_secret collee nue, sans nom de variable", () => {
+    expect(codeDeSortie(`const cle = "${CLE_SUPABASE_NOUVEAU_FORMAT}";`)).toBe(1);
   });
 
   it("bloque un JWT colle nu, sans nom de variable", () => {
