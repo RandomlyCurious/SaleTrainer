@@ -61,7 +61,10 @@ create index sessions_user_id_created_at_idx
 create table public.debriefs (
   id           uuid primary key default gen_random_uuid(),
   user_id      uuid not null references auth.users (id) on delete cascade,
-  session_id   uuid not null references public.sessions (id) on delete cascade,
+  -- `unique` : une session ne porte qu'un seul debrief. Sans lui, un rejeu de
+  -- la génération (#10) empilerait des debriefs concurrents sur le même appel,
+  -- et l'historique n'aurait plus de score unique à afficher.
+  session_id   uuid not null unique references public.sessions (id) on delete cascade,
   score_global smallint not null check (score_global between 0 and 10),
   scores_json  jsonb not null,
   moments_json jsonb not null,

@@ -314,9 +314,6 @@ ci-dessus : NE PAS les implémenter. Les noter ici, l'humain décidera.
   est perdu ; la session et son transcript restent consultables. Risque accepté en v0.
 - **Garde-fous de coût.** Le cap de 10 minutes par appel est le seul en v0. Pas de quota
   journalier, pas de plafond de dépense.
-- **Contrainte d'unicité sur `debriefs.session_id` (repéré en #2).** Une session ne devrait
-  porter qu'un seul debrief, mais rien ne l'empêche aujourd'hui : un `unique` sur
-  `session_id` le garantirait. Absent des critères de #2, donc **non implémenté**.
 - **Contrainte « mode B ⇒ `texte_linkedin` non nul » (repéré en #2).** Le parcours rend le
   profil LinkedIn obligatoire en mode `reel`, mais la base accepte un persona `reel` sans
   texte collé. Un CHECK conditionnel le fermerait au niveau des données. Absent des critères
