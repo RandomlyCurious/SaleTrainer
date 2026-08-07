@@ -21,6 +21,15 @@
 6. **REFACTOR** : nettoyer, relancer TOUTE la suite (`npm test`), montrer la sortie.
 7. **COMMIT** : Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`), cocher le ticket dans la spec.
 
+## Tests — comment les écrire
+- **Prompts LLM** : les assertions ciblent la STRUCTURE (présence ou absence d'un bloc
+  selon le mode et la difficulté) et les DONNÉES INJECTÉES (offre, cible, textes collés).
+  JAMAIS une phrase française littérale. La rédaction d'un prompt se retouche en
+  permanence : un test qui l'épingle transforme chaque amélioration de formulation en
+  échec rouge, ou — pire — fait réécrire le prompt pour satisfaire le test au lieu du
+  produit. Applicable à partir du ticket #9 ; les tests de #5 restent en l'état, aucun
+  rétrofit.
+
 ## Anti scope creep
 Tout ce qui n'est pas dans les critères d'acceptation de la spec ne s'implémente PAS,
 même si c'est "évident", "rapide" ou "mieux". Le noter dans la section
