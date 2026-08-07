@@ -66,6 +66,11 @@ Liste complète dans le [README](README.md#commandes).
   suppression de branche non mergée.
 - Fin de ticket : push + proposer la PR (gh pr create), ne JAMAIS merger
   soi-même — le merge est une décision humaine après CI verte.
+- Toute PR liée à un ticket porte `Closes #N` dans sa DESCRIPTION. C'est le seul
+  mot-clé que GitHub reconnaît : « Ferme #N » ne ferme rien, et l'issue reste
+  ouverte alors que le travail est mergé — le tracker ment. `(fixes #N)` dans un
+  message de commit marche aussi, mais la description est le porteur fiable :
+  elle survit à un squash.
 
 ## Reprise de projet / legacy
 Avant tout refactor d'un code non testé : écrire des **characterization tests**
