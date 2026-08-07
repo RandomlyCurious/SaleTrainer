@@ -5,7 +5,7 @@ import type { LlmClient } from "./types";
  *
  * Aucune clé API n'est lue ici, et aucun client n'est construit à l'import :
  * importer ce module dans un environnement sans secret (CI, build) doit rester
- * inoffensif. Le client concret est enregistré au démarrage de l'app (#6) ou
+ * inoffensif. Le client concret est enregistré au démarrage de l'app ou
  * remplacé par un double dans les tests.
  */
 
@@ -30,5 +30,17 @@ export function resetLlmClient(): void {
 
 export function resolveLlmClient(): LlmClient {
   if (client === null) throw new LlmNotConfiguredError();
+  return client;
+}
+
+/**
+ * Le client injecté, ou `null` — sans lever.
+ *
+ * Sert aux appelants qui savent se rabattre sur une implémentation par défaut
+ * (#6). Utiliser `resolveLlmClient()` et rattraper son exception marcherait,
+ * mais ferait du contrôle de flux avec une erreur : ici l'absence est un cas
+ * nominal, pas un incident.
+ */
+export function peekLlmClient(): LlmClient | null {
   return client;
 }
