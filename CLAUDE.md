@@ -16,7 +16,11 @@
 1. **SPEC** : lire la spec dans `docs/specs/` avant tout code. Si elle n'existe pas, la créer depuis `docs/specs/TEMPLATE.md` et la faire valider par l'humain. La spec porte le CONTRAT (objectif, périmètre, critères d'acceptation), pas l'avancement.
 2. **TICKET** : les tickets vivent dans les GitHub Issues, seule source de l'avancement. Travailler UNE issue à la fois, dans l'ordre. Annoncer laquelle avant de commencer.
 3. **RED** : écrire un test qui échoue décrivant le comportement attendu. Lancer `npm test`, montrer l'échec.
-4. **COMMIT** des tests seuls : `test: <ticket> (red)`. Ce commit peut inclure le **squelette typé** du module testé — signatures, types, `throw new Error("NotImplemented")` — et **jamais de logique** : sans lui, un test qui importe un module inexistant fait échouer `tsc --noEmit` et rend le commit RED impossible. Le typecheck reste obligatoire sur TOUS les commits ; il ne se contourne pas.
+4. **COMMIT** en deux temps, dans cet ordre — **le commit squelette précède le commit RED** :
+   1. `chore: <ticket> squelette` — le **squelette typé** du module testé, SEUL : signatures, types, `throw new Error("NotImplemented")`, et **jamais de logique**. Aucun test dans ce commit. La suite reste verte, tous les gates passent.
+   2. `test: <ticket> (red)` — les tests, SEULS. L'exemption « commit de tests seuls » du pre-commit s'applique, et le typecheck passe puisque le module existe déjà.
+
+   Sans le squelette, un test qui importe un module inexistant fait échouer `tsc --noEmit` et rend le commit RED impossible. Le typecheck reste obligatoire sur TOUS les commits ; il ne se contourne pas.
 5. **GREEN** : implémenter le minimum pour passer au vert. INTERDIT de modifier les tests pour les faire passer.
 6. **REFACTOR** : nettoyer, relancer TOUTE la suite (`npm test`), montrer la sortie.
 7. **COMMIT** : Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`), cocher le ticket dans la spec.
