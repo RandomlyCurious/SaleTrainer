@@ -1,0 +1,2 @@
+# Les migrations SQL arrivent au ticket #2. Une migration appliquée n'est
+# jamais rééditée : tout changement de schéma = nouveau fichier.
