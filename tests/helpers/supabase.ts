@@ -12,14 +12,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * dans le dépôt.
  */
 
-/**
- * Nom assemblé volontairement : `scripts/scan-secrets.sh` cherche le littéral
- * `SUPABASE_SERVICE_ROL` + `E`, et sa regex matche le NOM de la variable autant
- * qu'une valeur. Toute ligne ajoutée qui contient ce nom en clair bloque le
- * commit, même quand elle ne fait que lire l'environnement. Même parade que
- * celle documentée dans le scanner lui-même.
- */
-const NOM_CLE_ADMIN = "SUPABASE_SERVICE_ROL" + "E_KEY";
+const NOM_CLE_ADMIN = "SUPABASE_SERVICE_ROLE_KEY";
 
 function variableRequise(nom: string): string {
   const valeur = process.env[nom];

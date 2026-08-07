@@ -17,7 +17,16 @@
 # Les crochets (ROL[E], live[_], ey[J]…) ne sont PAS une coquille : sans eux, ce
 # fichier contient les littéraux qu'il cherche et se détecte lui-même dès qu'on
 # le modifie. La regex reste strictement équivalente. NE PAS les retirer.
-PATTERN='(SUPABASE_SERVICE_ROL[E]|sk_live[_]|sk_test[_]|ey[J][A-Za-z0-9_-]{20,}|gh[pous]_|api[_-]?key\s*=\s*["'"'"'][A-Za-z0-9]{20,})'
+#
+# La première alternative exige une VALEUR derrière le nom de variable. Avant,
+# elle matchait `SUPABASE_SERVICE_ROL`+`E` seul : lire cette variable dans du
+# code ou la câbler dans un workflow suffisait à bloquer le commit, alors
+# qu'aucun secret n'était en jeu. Un nom de variable n'est pas un secret ; ce
+# qu'on cherche, c'est une clé collée en face.
+# Passent donc : `…KEY` cité seul, `…KEY=` vide, `…KEY=$AUTRE`, `…KEY: ${{ … }}`.
+# Restent bloqués : `…KEY=` suivi d'un littéral d'au moins 20 caractères — ce qui
+# couvre le JWT historique comme la clé `sb_secret_…` du nouveau format.
+PATTERN='(SUPABASE_SERVICE_ROL[E][A-Z_]*\s*[:=]\s*["'"'"']?[A-Za-z0-9_.-]{20,}|sk_live[_]|sk_test[_]|ey[J][A-Za-z0-9_-]{20,}|gh[pous]_|api[_-]?key\s*=\s*["'"'"'][A-Za-z0-9]{20,})'
 
 # La ligne fautive n'est volontairement PAS affichée : elle finirait en clair
 # dans les logs GitHub Actions, qui sont conservés et lisibles.
