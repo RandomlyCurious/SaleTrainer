@@ -94,6 +94,18 @@ function borner(texte: string): string {
   return `${nettoye.slice(0, LONGUEUR_MAX_TEXTE_COLLE)}\n[texte tronque]`;
 }
 
+/**
+ * Validation des entrées à la frontière du PROMPT vocal.
+ *
+ * Redondante avec `champsInvalides` de `generation.ts`, et c'est voulu : les
+ * deux modules gardent deux frontières distinctes du parcours.
+ * - ici : avant d'ouvrir une session vocale avec un prompt bancal.
+ * - là-bas : avant de dépenser un appel LLM de génération.
+ *
+ * Les deux peuvent être franchies indépendamment — on peut rejouer un persona
+ * déjà généré sans repasser par la génération. Décision du 2026-08-07 : on
+ * garde les deux, on ne factorise pas.
+ */
 function validerEntrees(entrees: EntreesPersona): ErreurEntrees[] {
   const erreurs: ErreurEntrees[] = [];
 

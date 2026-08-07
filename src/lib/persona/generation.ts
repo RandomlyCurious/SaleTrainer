@@ -58,11 +58,18 @@ function borner(texte: string): string {
 }
 
 /**
- * Validation des entrées, alignée sur celle de #5.
+ * Validation des entrées à la frontière de la GÉNÉRATION.
  *
- * Volontairement redondante avec `construirePromptPersona` : les deux modules
- * sont appelés à des moments différents du parcours, et laisser passer un mode
- * B sans profil collé produirait un persona inventé de bout en bout.
+ * Redondante avec celle de `prompt.ts` (`validerEntrees`), et c'est voulu :
+ * les deux modules gardent deux frontières distinctes du parcours.
+ * - ici : avant de dépenser un appel LLM. Un mode B sans profil collé
+ *   produirait un persona inventé de bout en bout, et facturé.
+ * - là-bas : avant d'ouvrir une session vocale avec un prompt bancal.
+ *
+ * Les deux peuvent être franchies indépendamment — on peut rejouer un persona
+ * déjà généré sans repasser par la génération. Factoriser reviendrait à faire
+ * dépendre chaque frontière de l'autre pour un gain de quelques lignes.
+ * Décision du 2026-08-07 : on garde les deux, on ne factorise pas.
  */
 function champsInvalides(entrees: EntreesPersona): string[] {
   const champs: string[] = [];
