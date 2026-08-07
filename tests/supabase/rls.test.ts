@@ -19,6 +19,8 @@ let alice: UtilisateurDeTest;
 let bob: UtilisateurDeTest;
 let personaDAlice: string;
 let sessionDAlice: string;
+/** Session volontairement sans debrief, pour tester les CHECK isolément. */
+let sessionSansDebrief: string;
 
 beforeAll(async () => {
   alice = await creerUtilisateurDeTest("alice");
@@ -39,6 +41,14 @@ beforeAll(async () => {
     .single();
   if (session.error !== null) throw new Error(session.error.message);
   sessionDAlice = session.data.id;
+
+  const seconde = await alice.client
+    .from("sessions")
+    .insert({ user_id: alice.id, persona_id: personaDAlice })
+    .select("id")
+    .single();
+  if (seconde.error !== null) throw new Error(seconde.error.message);
+  sessionSansDebrief = seconde.data.id;
 
   const debrief = await alice.client.from("debriefs").insert({
     user_id: alice.id,
@@ -147,6 +157,42 @@ describe("RLS — isolation entre utilisateurs", () => {
   });
 });
 
+describe("Unicite du debrief par session", () => {
+  it("refuse un second debrief sur une session qui en a deja un", async () => {
+    const { error } = await alice.client.from("debriefs").insert({
+      user_id: alice.id,
+      session_id: sessionDAlice,
+      score_global: 4,
+      scores_json: { global: 4 },
+      moments_json: [],
+      consigne: "Second debrief interdit sur la meme session.",
+    });
+
+    expect(error).not.toBeNull();
+  });
+
+  it("accepte un debrief sur une session qui n'en a pas encore", async () => {
+    // Session dediee : ne pas consommer celle que les tests de CHECK utilisent.
+    const session = await alice.client
+      .from("sessions")
+      .insert({ user_id: alice.id, persona_id: personaDAlice })
+      .select("id")
+      .single();
+    expect(session.error).toBeNull();
+
+    const { error } = await alice.client.from("debriefs").insert({
+      user_id: alice.id,
+      session_id: session.data!.id,
+      score_global: 6,
+      scores_json: { global: 6 },
+      moments_json: [],
+      consigne: "Premier debrief de cette session.",
+    });
+
+    expect(error).toBeNull();
+  });
+});
+
 describe("Contraintes CHECK", () => {
   it("rejette un mode hors enumeration", async () => {
     const { error } = await alice.client
@@ -182,10 +228,12 @@ describe("Contraintes CHECK", () => {
     expect(error).not.toBeNull();
   });
 
+  // Sur une session encore sans debrief : seule la borne peut faire echouer
+  // l'insertion, pas la contrainte d'unicite.
   it("rejette un score_global hors 0-10", async () => {
     const { error } = await alice.client.from("debriefs").insert({
       user_id: alice.id,
-      session_id: sessionDAlice,
+      session_id: sessionSansDebrief,
       score_global: 11,
       scores_json: { global: 11 },
       moments_json: [],
