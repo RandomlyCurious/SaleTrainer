@@ -26,6 +26,10 @@ const eslintConfig = defineConfig([
     // Artefacts générés par la stack Supabase locale (`supabase start`).
     // Déjà ignorés par git ; eslint ne lit pas .gitignore.
     "supabase/.temp/**",
+    // Harnais de dev jetable : hors gates par décision, et il logge
+    // volontairement (c'est tout son objet), ce qu'interdit `no-console`.
+    // Voir l'en-tête du fichier.
+    "scripts/essai-persona.ts",
   ]),
 ]);
 

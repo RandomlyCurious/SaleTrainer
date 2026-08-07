@@ -43,6 +43,7 @@ Playwright · ESLint 9 (flat config). Détails : [docs/architecture.md](docs/arc
 | `npm run build` | build de prod (gate CI bloquant) |
 | `supabase start` / `supabase db reset` | BDD locale |
 | `supabase db diff -f <nom>` | générer une migration |
+| `npx tsx scripts/essai-persona.ts` | harnais de dev : génère un persona et l'affiche (appelle la VRAIE API OpenAI, hors gates — voir l'en-tête du fichier) |
 
 ## Maintenance du template
 Rafraîchir les versions ~tous les 6 mois : `npm outdated`, bump, relancer les 5 gates,
