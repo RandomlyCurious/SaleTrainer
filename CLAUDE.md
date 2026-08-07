@@ -64,3 +64,12 @@ qui capturent le comportement ACTUEL (même bugué), les commiter, puis refactor
 - Décisions actées : `docs/decisions.md` (1 ligne par décision, datée)
 - Spec de la feature en cours : `docs/specs/<feature>.md`
 Lire ces fichiers AU DÉBUT de chaque session, ne pas les paraphraser ici.
+
+
+## Exceptions POC (décidées, non négociables)
+- La couche vocale temps réel (WebRTC / OpenAI Realtime) est EXEMPTÉE de TDD.
+  Le TDD s'applique uniquement à : génération de persona (texte → JSON),
+  parsing/validation du debrief, modèle de données.
+- Les seuils de couverture restent à 0 jusqu'à la décision go/no-go du projet.
+- Le hors-scope de la section 7 de la spec est contraignant : toute proposition
+  de feature hors liste doit être refusée.
